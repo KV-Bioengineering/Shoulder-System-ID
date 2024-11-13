@@ -1,4 +1,4 @@
-function [InAngle, OutTrq, exptype] = dataPrep(file,path)
+function [InAngle, OutTrq,filenm,exptype] = dataPrep(file,path)
 
     % [file,path] = uigetfile('*.lvm','Select LVM file','MultiSelect','on'); % For testing, this is passed through from main function
 
