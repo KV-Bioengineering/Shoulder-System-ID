@@ -1,21 +1,12 @@
-
-function [Pararray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PCalc(Fs,inAnglData,outTrqData,deviceData)
+%% PCalc - function that estimates the parameters of the GH joint, as well as calculates the parametric Variance accounted for
+function [Pararray,MnTrq,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PCalc(Fs,inAnglData,outTrqData,sFRF_D)
     Ts = 1/Fs;
     t=(0:10000)*Ts; %time vector
     t=t';
 
     NSplt = 10001; % size of segments
 
-    %   Device RF -----------------
-    Dwin = 3000;
-    Dov = 0.6;
-
-    inAngleD = detrend(deviceData(:,1),1);
-    outTrqD = detrend(deviceData(:,2),1);
-
-    sFRF_D = tfestimate(inAngleD,outTrqD,Dwin,Dov*Dwin,[],Fs);
-
-    cohD = mscohere(inAngleD,outTrqD,Dwin,Dov*Dwin,[],Fs);
+    %   Angle & Torque Data -----------------
 
     inAngle(:,1) = detrend(inAnglData(1:10001),1);
     inAngle(:,2) = detrend(inAnglData(10001:20001),1);
@@ -36,6 +27,11 @@ function [Pararray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PC
     outTrq(:,2) = ttlTrq(:,2) - dTrq(:,2);
     outTrq(:,3) = ttlTrq(:,3) - dTrq(:,3);
     outTrq(:,4) = ttlTrq(:,4) - dTrq(:,4);
+
+    ctxnTrq(:,1) = outTrqData(1:10001) - TrqCalc(sFRF_D,inAngle(:,1));
+    ctxnTrq(:,2) = outTrqData(10001:20001) - TrqCalc(sFRF_D,inAngle(:,2));
+    ctxnTrq(:,3) = outTrqData(20001:30001) - TrqCalc(sFRF_D,inAngle(:,3));
+    ctxnTrq(:,4) = outTrqData(30001:40001) - TrqCalc(sFRF_D,inAngle(:,4));
 
     win = []; % window size
     ov = [];
@@ -101,7 +97,7 @@ function [Pararray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PC
     [E3,resnorm3,residual3] = lsqnonlin(err3,E0,[],[],opts);
     [E4,resnorm4,residual4] = lsqnonlin(err4,E0,[],[],opts);
 
-    %% Parametric Model and VAF - Need to finish stuff below this
+    %% Parametric Model and VAF
     fPar = 0:Fs/10001:500; %frequency vector for parametric sFRF, used for graphing
 
     cIRF1_par = ((2*(-i)*sin(i*(t*(E1(2)^2 - 4*E1(1)*E1(3))^(1/2))/(2*E1(1))).*exp(-(E1(2)*t)/(2*E1(1))))/(E1(2)^2 - 4*E1(1)*E1(3))^(1/2));  %Simulated Compliance IRF (Parametric) <- from the inverse Laplace of the compliance formula
@@ -162,6 +158,11 @@ function [Pararray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PC
     Pararray(2,:) = E2;
     Pararray(3,:) = E3;
     Pararray(4,:) = E4;
+
+    MnTrq(1) = mean(ctxnTrq(:,1));
+    MnTrq(2) = mean(ctxnTrq(:,2));
+    MnTrq(3) = mean(ctxnTrq(:,3));
+    MnTrq(4) = mean(ctxnTrq(:,4));
 
     VAF_ParArray(1)=VAF_par1;
     VAF_ParArray(2)=VAF_par2;

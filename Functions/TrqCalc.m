@@ -1,9 +1,7 @@
+%% TrqCalc - Function for calculating Torque from a Stiffness Frequency Response Function (sFRF)
 function TrqEst = TrqCalc(sFRF,inAngleData)
 
     winAngle=tukeywin(length(inAngleData),0.02).*inAngleData; % windowing angle for fft
-
-    % fAngle = fft(inAngleD); % testing
-    % fAngleD = fAngle(1:size(fAngle,1)/2+1); % 1-sided Angle - testing
 
     fftAngle2s = fft(winAngle,length(sFRF)*2); % 2-sided Angle in freq domain
     fftAngle = fftAngle2s(1:size(fftAngle2s,1)/2); % 1-sided Angle

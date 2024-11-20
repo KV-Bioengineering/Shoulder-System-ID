@@ -1,6 +1,5 @@
+%% dataPrep - function to determine file name, experiment (contraction) type and import corresponding lvm data
 function [InAngle, OutTrq,filenm,exptype] = dataPrep(file,path)
-
-    % [file,path] = uigetfile('*.lvm','Select LVM file','MultiSelect','on'); % For testing, this is passed through from main function
 
     filePath = cat(2,path,file); % construct filepath from file name and dir path
 

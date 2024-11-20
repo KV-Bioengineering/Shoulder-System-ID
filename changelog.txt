@@ -1,0 +1,11 @@
+v1.0-RC2 -------------
+- Added functionality to check if output directory exists, and creates it if it doesn't
+- Output is written into their respective trial subfolders
+- Mean Contraction Torque for each parameter set is now also given as an output
+- Changed Device FRF to be calculated in the main function and passed into the parameter calculation function
+- Added brief descriptors of each function at the top of their respective files
+- Moved functions into new "Functions" Folder. The main function now adds this folder to its path at the beggining of its run
+
+Known Issues
+- Estimated device torque is calculated using full device frequency response, resulting in a very "noisy" device torque estimate. This also introduces "noise" to the calculated contraction torque.
+- How to calculate non-Parametric VAF
