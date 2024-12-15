@@ -1,5 +1,5 @@
 %% PCalc - function that estimates the parameters of the GH joint, as well as calculates the parametric Variance accounted for
-function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PCalc(Fs,inAnglData,outTrqData,sFRF_D)
+function [Pararray,MnTrq,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PCalc(Fs,inAnglData,outTrqData,sFRF_D)
     Ts = 1/Fs;
     t=(0:10000)*Ts; %time vector
     t=t';
@@ -30,17 +30,21 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     dTrq(:,3) = TrqCalc(sFRF_D,inAngle(:,3));
     dTrq(:,4) = TrqCalc(sFRF_D,inAngle(:,4));
 
-    %Alternate device torque calculation
-    % dTrq(:,1) = TrqConv(sFRF_D,inAngle(:,1));
-    % dTrq(:,2) = TrqConv(sFRF_D,inAngle(:,2));
-    % dTrq(:,3) = TrqConv(sFRF_D,inAngle(:,3));
-    % dTrq(:,4) = TrqConv(sFRF_D,inAngle(:,4));
+    dTrq2(:,1) = TrqConv(sFRF_D,inAngle(:,1));
+    dTrq2(:,2) = TrqConv(sFRF_D,inAngle(:,2));
+    dTrq2(:,3) = TrqConv(sFRF_D,inAngle(:,3));
+    dTrq2(:,4) = TrqConv(sFRF_D,inAngle(:,4));
 
     % Output Torque (Contraction Torque)
     outTrq(:,1) = ttlTrq(:,1) - dTrq(:,1);
     outTrq(:,2) = ttlTrq(:,2) - dTrq(:,2);
     outTrq(:,3) = ttlTrq(:,3) - dTrq(:,3);
     outTrq(:,4) = ttlTrq(:,4) - dTrq(:,4);
+
+    outTrq_filt(:,1) = filtfilt(b,a,outTrq(:,1));
+    outTrq_filt(:,2) = filtfilt(b,a,outTrq(:,2));
+    outTrq_filt(:,3) = filtfilt(b,a,outTrq(:,3));
+    outTrq_filt(:,4) = filtfilt(b,a,outTrq(:,4));
 
     %%  Transfer Function Estimation -----------------
     win = []; % window size
@@ -54,67 +58,21 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     [sFRF3,ftf3] = tfestimate(inAngle(:,3),outTrq(:,3),win,ov,NSplt,Fs);
     [sFRF4,ftf4] = tfestimate(inAngle(:,4),outTrq(:,4),win,ov,NSplt,Fs);
 
+    % [sFRF1,ftf1] = tfestimate(inAngle(:,1),outTrq_filt(:,1),win,ov,NSplt,Fs); % cross power spectral density between the input and the output
+    % [sFRF2,ftf2] = tfestimate(inAngle(:,2),outTrq_filt(:,2),win,ov,NSplt,Fs);
+    % [sFRF3,ftf3] = tfestimate(inAngle(:,3),outTrq_filt(:,3),win,ov,NSplt,Fs);
+    % [sFRF4,ftf4] = tfestimate(inAngle(:,4),outTrq_filt(:,4),win,ov,NSplt,Fs);
+
     %   Coherence ------------------------
     coh1 = mscohere(inAngle(:,1),outTrq(:,1),win,ov,NSplt,Fs);
     coh2 = mscohere(inAngle(:,2),outTrq(:,2),win,ov,NSplt,Fs);
     coh3 = mscohere(inAngle(:,3),outTrq(:,3),win,ov,NSplt,Fs);
     coh4 = mscohere(inAngle(:,4),outTrq(:,4),win,ov,NSplt,Fs);
 
-    %% Non-Parametric VAF
-
-    fftAngle2s_1 = fft(tukeywin(NSplt,0.02).*inAngle(:,1)); % 2-sided Angle in freq domain
-    fftAngle2s_2 = fft(tukeywin(NSplt,0.02).*inAngle(:,2)); % 2-sided Angle in freq domain
-    fftAngle2s_3 = fft(tukeywin(NSplt,0.02).*inAngle(:,3)); % 2-sided Angle in freq domain
-    fftAngle2s_4 = fft(tukeywin(NSplt,0.02).*inAngle(:,4)); % 2-sided Angle in freq domain
-
-    % fftAngle = fftAngle2s(1:size(fftAngle2s,1)/2+1);
-
-    fftAngle_1 = fftAngle2s_1(1:size(fftAngle2s_1,1)/2+1); % 1-sided Angle
-    fftAngle_2 = fftAngle2s_2(1:size(fftAngle2s_2,1)/2+1); % 1-sided Angle
-    fftAngle_3 = fftAngle2s_3(1:size(fftAngle2s_3,1)/2+1); % 1-sided Angle
-    fftAngle_4 = fftAngle2s_4(1:size(fftAngle2s_4,1)/2+1); % 1-sided Angle
-
-    % fftTrq = fftAngle.*sFRF';
-    
-    fftTrq_1 = fftAngle_1.*sFRF1; % calculate Trq in freq domain
-    fftTrq_2 = fftAngle_2.*sFRF2;
-    fftTrq_3 = fftAngle_3.*sFRF3;
-    fftTrq_4 = fftAngle_4.*sFRF4;
-
-    % fftTrq2s = [fftTrq(1); fftTrq(2:end); flipud(conj(fftTrq(2:end)))];
-
-    fftTrq2s_1 = [fftTrq_1(1); fftTrq_1(2:end); flipud(conj(fftTrq_1(2:end)))]; % convert to 2 sided Trq
-    fftTrq2s_2 = [fftTrq_2(1); fftTrq_2(2:end); flipud(conj(fftTrq_2(2:end)))];
-    fftTrq2s_3 = [fftTrq_3(1); fftTrq_3(2:end); flipud(conj(fftTrq_3(2:end)))];
-    fftTrq2s_4 = [fftTrq_4(1); fftTrq_4(2:end); flipud(conj(fftTrq_4(2:end)))];
-
-    % Trq_NP = ifft(fftTrq2s);
-
-    %Take real value of Trq, there seems to be some minor error (order of 10^-15) from sFRF
-    % Trq_NP1 = real(ifft(fftTrq2s_1)); % ifft of freq-domain Trq to get time-domain Trq
-    % Trq_NP2 = real(ifft(fftTrq2s_2));
-    % Trq_NP3 = real(ifft(fftTrq2s_3));
-    % Trq_NP4 = real(ifft(fftTrq2s_4));
-
-    Trq_NP1 = ifft(fftTrq2s_1); % ifft of freq-domain Trq to get time-domain Trq
-    Trq_NP2 = ifft(fftTrq2s_2);
-    Trq_NP3 = ifft(fftTrq2s_3);
-    Trq_NP4 = ifft(fftTrq2s_4);
-
-    Trq_filt1 = filtfilt(b,a,outTrq(:,1));
-    Trq_filt2 = filtfilt(b,a,outTrq(:,2));
-    Trq_filt3 = filtfilt(b,a,outTrq(:,3));
-    Trq_filt4 = filtfilt(b,a,outTrq(:,4));
-
-    Trq_NPFilt1 = filtfilt(b,a,Trq_NP1);
-    Trq_NPFilt2 = filtfilt(b,a,Trq_NP2);
-    Trq_NPFilt3 = filtfilt(b,a,Trq_NP3);
-    Trq_NPFilt4 = filtfilt(b,a,Trq_NP4);
-
-    VAF_NP1 = 100*(1-((var(Trq_filt1-Trq_NPFilt1)))./var(Trq_filt1));
-    VAF_NP2 = 100*(1-((var(Trq_filt2-Trq_NPFilt2)))./var(Trq_filt2));
-    VAF_NP3 = 100*(1-((var(Trq_filt3-Trq_NPFilt3)))./var(Trq_filt3));
-    VAF_NP4 = 100*(1-((var(Trq_filt4-Trq_NPFilt4)))./var(Trq_filt4));
+    % coh1 = mscohere(inAngle(:,1),outTrq_filt(:,1),win,ov,NSplt,Fs);
+    % coh2 = mscohere(inAngle(:,2),outTrq_filt(:,2),win,ov,NSplt,Fs);
+    % coh3 = mscohere(inAngle(:,3),outTrq_filt(:,3),win,ov,NSplt,Fs);
+    % coh4 = mscohere(inAngle(:,4),outTrq_filt(:,4),win,ov,NSplt,Fs);
 
     %%   Parameter Estimation ---------------
 
@@ -136,15 +94,10 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     cohydata3 = coh3(1:ftfLim);
     cohydata4 = coh4(1:ftfLim);
 
-    % err1 = @(E1) cohydata1.*(abs(ydata1)+angle(ydata1) - (abs(E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3))+angle(E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3))));
-    % err2 = @(E2) cohydata2.*(abs(ydata2)+angle(ydata2) - (abs(E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3))+angle(E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3))));
-    % err3 = @(E3) cohydata3.*(abs(ydata3)+angle(ydata3) - (abs(E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3))+angle(E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3))));
-    % err4 = @(E4) cohydata4.*(abs(ydata4)+angle(ydata4) - (abs(E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3))+angle(E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3))));
-
-    err1 = @(E1) [cohydata1.*(abs(ydata1)-abs((E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3)))); cohydata1.*(angle(ydata1)-angle((E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3))))];
-    err2 = @(E2) [cohydata2.*(abs(ydata2)-abs((E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3)))); cohydata2.*(angle(ydata2)-angle((E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3))))];
-    err3 = @(E3) [cohydata3.*(abs(ydata3)-abs((E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3)))); cohydata3.*(angle(ydata3)-angle((E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3))))];
-    err4 = @(E4) [cohydata4.*(abs(ydata4)-abs((E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3)))); cohydata4.*(angle(ydata4)-angle((E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3))))];
+    err1 = @(E1) cohydata1.*(abs(ydata1)+angle(ydata1) - (abs(E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3))+angle(E1(1)*((i*w_Splt).^2)+E1(2)*i*w_Splt+E1(3))));
+    err2 = @(E2) cohydata2.*(abs(ydata2)+angle(ydata2) - (abs(E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3))+angle(E2(1)*((i*w_Splt).^2)+E2(2)*i*w_Splt+E2(3))));
+    err3 = @(E3) cohydata3.*(abs(ydata3)+angle(ydata3) - (abs(E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3))+angle(E3(1)*((i*w_Splt).^2)+E3(2)*i*w_Splt+E3(3))));
+    err4 = @(E4) cohydata4.*(abs(ydata4)+angle(ydata4) - (abs(E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3))+angle(E4(1)*((i*w_Splt).^2)+E4(2)*i*w_Splt+E4(3))));
 
     %Least squares fit to estimate IBK
     % E = lsqnonlin(err,E0,[],[],options);
@@ -188,6 +141,11 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
 
     %   Filtered Torques -----------------
 
+    Trq_filt1 = filtfilt(b,a,outTrq(:,1));
+    Trq_filt2 = filtfilt(b,a,outTrq(:,2));
+    Trq_filt3 = filtfilt(b,a,outTrq(:,3));
+    Trq_filt4 = filtfilt(b,a,outTrq(:,4));
+
     Trq_simFilt1 = filtfilt(b,a,Trq_sim1);
     Trq_simFilt2 = filtfilt(b,a,Trq_sim2);
     Trq_simFilt3 = filtfilt(b,a,Trq_sim3);
@@ -211,11 +169,6 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     MnTrq(2) = mean(outTrq(:,2));
     MnTrq(3) = mean(outTrq(:,3));
     MnTrq(4) = mean(outTrq(:,4));
-
-    VAF_NPArray(1)=VAF_NP1;
-    VAF_NPArray(2)=VAF_NP2;
-    VAF_NPArray(3)=VAF_NP3;
-    VAF_NPArray(4)=VAF_NP4;
 
     VAF_ParArray(1)=VAF_par1;
     VAF_ParArray(2)=VAF_par2;

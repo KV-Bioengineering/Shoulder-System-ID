@@ -1,11 +1,15 @@
-v1.0-RC2 -------------
-- Added functionality to check if output directory exists, and creates it if it doesn't
-- Output is written into their respective trial subfolders
-- Mean Contraction Torque for each parameter set is now also given as an output
-- Changed Device FRF to be calculated in the main function and passed into the parameter calculation function
-- Added brief descriptors of each function at the top of their respective files
-- Moved functions into new "Functions" Folder. The main function now adds this folder to its path at the beggining of its run
+v1.0 ------------
+- Output directory is now user defined. Output files will be written into the selected directory
+- Changed device TF estimate to equal segment size. This fixed an error in calculated device torque, as the angle fft calculated to be the smaller size of the device FRF. Causing data to be ingnored.
+- Added alternate method to estimate Torque using convulution in time domain.
+- Added Bodeplotter function (this needs to be called by user as needed)
+- Added Calculations for the Non-parametric VAF in PCalc. The PCalc function returns this as an array
+- Misc Changes:
+    - Added comments in various places to improve legibility
+    - Cleaned up unused code
 
-Known Issues
-- Estimated device torque is calculated using full device frequency response, resulting in a very "noisy" device torque estimate. This also introduces "noise" to the calculated contraction torque.
-- How to calculate non-Parametric VAF
+Todo
+- Clean up code & Add comments to the non-parametric VAF section
+- Comment BodePlotter functions (for required input args
+- Comment other functions
+- Add Batch Processing
