@@ -1,12 +1,5 @@
-v1.0 ------------
-- Output directory is now user defined. Output files will be written into the selected directory
-- Changed device TF estimate to equal segment size. This fixed an error in calculated device torque, as the angle fft calculated to be the smaller size of the device FRF. Causing data to be ingnored.
-- Added alternate method to estimate Torque using convulution in time domain.
-- Added Bodeplotter function (this needs to be called by user as needed)
-- Added Calculations for the Non-parametric VAF in PCalc. The PCalc function returns this as an array
-- Misc Changes:
-    - Added comments in various places to improve legibility
-    - Cleaned up unused code
+v1.1.0 ------------
+- Added ability to select multiple experiment .lvm files to "batch process", using the previously selected device data
 
 Todo
 - Clean up code & Add comments to the non-parametric VAF section
