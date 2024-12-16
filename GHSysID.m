@@ -12,13 +12,13 @@ function GHSysID()
     % outpath = "..\PData\0000\output"; % for testing
 
     %%  Device Data ----------
-    % [DAA_file,DAA_path] = uigetfile('*.lvm','Select Device AB/AD LVM file');
-    DAA_file = 'Device_Ab(0000).lvm'; % for testing
-    DAA_path = '..\PData\0000\'; % for testing
+    [DAA_file,DAA_path] = uigetfile('*.lvm','Select Device AB/AD LVM file');
+    % DAA_file = 'Device_Ab(0000).lvm'; % for testing
+    % DAA_path = '..\PData\0000\'; % for testing
 
-    % [DIE_file,DIE_path] = uigetfile('*.lvm','Select Device Int/Ext LVM file');
-    DIE_file = 'Device_In(0000).lvm'; % for testing
-    DIE_path = '..\PData\0000\'; % for testing
+    [DIE_file,DIE_path] = uigetfile('*.lvm','Select Device Int/Ext LVM file');
+    % DIE_file = 'Device_In(0000).lvm'; % for testing
+    % DIE_path = '..\PData\0000\'; % for testing
 
     % 1st column Angle Data, 2nd column Trq Data
     [Device_AA(:,1), Device_AA(:,2)] = dataPrep(DAA_file, DAA_path);

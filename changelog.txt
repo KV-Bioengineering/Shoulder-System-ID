@@ -1,8 +1,14 @@
 v1.1.0 ------------
 - Added ability to select multiple experiment .lvm files to "batch process", using the previously selected device data
 
+v1.1.1 ------------
+- Forgot adjust testing code before pushing v1.1.0, which caused a bug that gave Device Data a fixed path.
+
 Todo
-- Clean up code & Add comments to the non-parametric VAF section
-- Comment BodePlotter functions (for required input args
-- Comment other functions
-- Add Batch Processing
+- Functions for plotting stuff
+- Some method for reducing local minima during least squares fitting (probably using grid search method)
+- Change to use data less than 40s. Currently assumes 40s of data (as this is the output from the robot), this is split into 10s in the PCalc step.
+- Misc:
+    - Clean up code & Add comments to the non-parametric VAF section
+    - Comment BodePlotter functions (for required input args
+    - Comment other functions
