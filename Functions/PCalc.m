@@ -13,16 +13,16 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     %   Angle & Torque Data -----------------
     % Split Data into 4 data sets
     % Angle Data
-    inAngle(:,1) = detrend(inAnglData(1:10001),1);
-    inAngle(:,2) = detrend(inAnglData(10001:20001),1);
-    inAngle(:,3) = detrend(inAnglData(20001:30001),1);
-    inAngle(:,4) = detrend(inAnglData(30001:40001),1);
+    inAngle(:,1) = inAnglData(1:10001);
+    inAngle(:,2) = inAnglData(10001:20001);
+    inAngle(:,3) = inAnglData(20001:30001);
+    inAngle(:,4) = inAnglData(30001:40001);
 
-    % Total Torque
-    ttlTrq(:,1) = detrend(outTrqData(1:10001),1);
-    ttlTrq(:,2) = detrend(outTrqData(10001:20001),1);
-    ttlTrq(:,3) = detrend(outTrqData(20001:30001),1);
-    ttlTrq(:,4) = detrend(outTrqData(30001:40001),1);
+    % Detrended Angle Data
+    dtAngle(:,1) = detrend(inAnglData(1:10001),1);
+    dtAngle(:,2) = detrend(inAnglData(10001:20001),1);
+    dtAngle(:,3) = detrend(inAnglData(20001:30001),1);
+    dtAngle(:,4) = detrend(inAnglData(30001:40001),1);
 
     % Device Torque
     dTrq(:,1) = TrqCalc(sFRF_D,inAngle(:,1));
@@ -37,10 +37,16 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     % dTrq(:,4) = TrqConv(sFRF_D,inAngle(:,4));
 
     % Output Torque (Contraction Torque)
-    outTrq(:,1) = ttlTrq(:,1) - dTrq(:,1);
-    outTrq(:,2) = ttlTrq(:,2) - dTrq(:,2);
-    outTrq(:,3) = ttlTrq(:,3) - dTrq(:,3);
-    outTrq(:,4) = ttlTrq(:,4) - dTrq(:,4);
+    outTrq(:,1) = outTrqData(1:10001) - dTrq(:,1);
+    outTrq(:,2) = outTrqData(10001:20001) - dTrq(:,2);
+    outTrq(:,3) = outTrqData(20001:30001) - dTrq(:,3);
+    outTrq(:,4) = outTrqData(30001:40001) - dTrq(:,4);
+
+    % Detrended Contraction Torque
+    dtTrq(:,1) = detrend(outTrq(:,1),1);
+    dtTrq(:,2) = detrend(outTrq(:,2),1);
+    dtTrq(:,3) = detrend(outTrq(:,3),1);
+    dtTrq(:,4) = detrend(outTrq(:,4),1);
 
     %%  Transfer Function Estimation -----------------
     win = []; % window size
@@ -49,23 +55,23 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
 
     % [sFRF,ftf] = tfestimate(inAngl,outTrq,win,ov.*win,f,Fs);
 
-    [sFRF1,ftf1] = tfestimate(inAngle(:,1),outTrq(:,1),win,ov,NSplt,Fs); % cross power spectral density between the input and the output
-    [sFRF2,ftf2] = tfestimate(inAngle(:,2),outTrq(:,2),win,ov,NSplt,Fs);
-    [sFRF3,ftf3] = tfestimate(inAngle(:,3),outTrq(:,3),win,ov,NSplt,Fs);
-    [sFRF4,ftf4] = tfestimate(inAngle(:,4),outTrq(:,4),win,ov,NSplt,Fs);
+    [sFRF1,ftf1] = tfestimate(dtAngle(:,1),dtTrq(:,1),win,ov,NSplt,Fs); % cross power spectral density between the input and the output
+    [sFRF2,ftf2] = tfestimate(dtAngle(:,2),dtTrq(:,2),win,ov,NSplt,Fs);
+    [sFRF3,ftf3] = tfestimate(dtAngle(:,3),dtTrq(:,3),win,ov,NSplt,Fs);
+    [sFRF4,ftf4] = tfestimate(dtAngle(:,4),dtTrq(:,4),win,ov,NSplt,Fs);
 
     %   Coherence ------------------------
-    coh1 = mscohere(inAngle(:,1),outTrq(:,1),win,ov,NSplt,Fs);
-    coh2 = mscohere(inAngle(:,2),outTrq(:,2),win,ov,NSplt,Fs);
-    coh3 = mscohere(inAngle(:,3),outTrq(:,3),win,ov,NSplt,Fs);
-    coh4 = mscohere(inAngle(:,4),outTrq(:,4),win,ov,NSplt,Fs);
+    coh1 = mscohere(dtAngle(:,1),dtTrq(:,1),win,ov,NSplt,Fs);
+    coh2 = mscohere(dtAngle(:,2),dtTrq(:,2),win,ov,NSplt,Fs);
+    coh3 = mscohere(dtAngle(:,3),dtTrq(:,3),win,ov,NSplt,Fs);
+    coh4 = mscohere(dtAngle(:,4),dtTrq(:,4),win,ov,NSplt,Fs);
 
     %% Non-Parametric VAF
 
-    fftAngle2s_1 = fft(tukeywin(NSplt,0.02).*inAngle(:,1)); % 2-sided Angle in freq domain
-    fftAngle2s_2 = fft(tukeywin(NSplt,0.02).*inAngle(:,2)); % 2-sided Angle in freq domain
-    fftAngle2s_3 = fft(tukeywin(NSplt,0.02).*inAngle(:,3)); % 2-sided Angle in freq domain
-    fftAngle2s_4 = fft(tukeywin(NSplt,0.02).*inAngle(:,4)); % 2-sided Angle in freq domain
+    fftAngle2s_1 = fft(tukeywin(NSplt,0.02).*dtAngle(:,1)); % 2-sided Angle in freq domain
+    fftAngle2s_2 = fft(tukeywin(NSplt,0.02).*dtAngle(:,2)); % 2-sided Angle in freq domain
+    fftAngle2s_3 = fft(tukeywin(NSplt,0.02).*dtAngle(:,3)); % 2-sided Angle in freq domain
+    fftAngle2s_4 = fft(tukeywin(NSplt,0.02).*dtAngle(:,4)); % 2-sided Angle in freq domain
 
     % fftAngle = fftAngle2s(1:size(fftAngle2s,1)/2+1);
 
@@ -101,10 +107,10 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     Trq_NP3 = ifft(fftTrq2s_3);
     Trq_NP4 = ifft(fftTrq2s_4);
 
-    Trq_filt1 = filtfilt(b,a,outTrq(:,1));
-    Trq_filt2 = filtfilt(b,a,outTrq(:,2));
-    Trq_filt3 = filtfilt(b,a,outTrq(:,3));
-    Trq_filt4 = filtfilt(b,a,outTrq(:,4));
+    Trq_filt1 = filtfilt(b,a,dtTrq(:,1));
+    Trq_filt2 = filtfilt(b,a,dtTrq(:,2));
+    Trq_filt3 = filtfilt(b,a,dtTrq(:,3));
+    Trq_filt4 = filtfilt(b,a,dtTrq(:,4));
 
     Trq_NPFilt1 = filtfilt(b,a,Trq_NP1);
     Trq_NPFilt2 = filtfilt(b,a,Trq_NP2);
@@ -181,10 +187,10 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     sIRF4_parNrot=ifft(sFRF4_par);
     sIRF4_par=ifftshift(sIRF4_parNrot);
 
-    Trq_sim1=conv(tukeywin(NSplt,0.02).*inAngle(:,1),sIRF1_par,'same'); % Simulated Intrinsic torque
-    Trq_sim2=conv(tukeywin(NSplt,0.02).*inAngle(:,2),sIRF2_par,'same');
-    Trq_sim3=conv(tukeywin(NSplt,0.02).*inAngle(:,3),sIRF3_par,'same');
-    Trq_sim4=conv(tukeywin(NSplt,0.02).*inAngle(:,4),sIRF4_par,'same');
+    Trq_sim1=conv(tukeywin(NSplt,0.02).*dtAngle(:,1),sIRF1_par,'same'); % Simulated Intrinsic torque
+    Trq_sim2=conv(tukeywin(NSplt,0.02).*dtAngle(:,2),sIRF2_par,'same');
+    Trq_sim3=conv(tukeywin(NSplt,0.02).*dtAngle(:,3),sIRF3_par,'same');
+    Trq_sim4=conv(tukeywin(NSplt,0.02).*dtAngle(:,4),sIRF4_par,'same');
 
     %   Filtered Torques -----------------
 
