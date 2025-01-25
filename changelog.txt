@@ -11,9 +11,6 @@ v1.1.2 ------------
     - Transfer function estimation, Coh^2 and VAF calculations are done using these new variables.
     - Other calculations are done using the old angle and torque variables. These now contain the Angle and Torque data readings from the machine
 
-v1.2 -------------
-- (WIP) IBK Plotting function
-
 Todo
 - Excluding Low VAF Data
 - Some method for reducing local minima during least squares fitting (probably using grid search method)
