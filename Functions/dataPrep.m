@@ -17,7 +17,7 @@ function [InAngle, OutTrq,filenm,exptype] = dataPrep(file,path)
         case {'Ab','Ad'}
             InAngle = lvmData.Segment1.data(1:40001,4);
             OutTrq = lvmData.Segment1.data(1:40001,5);
-        case {'In','Ex'}
+        case {'In','Ex','IE'}
             InAngle = lvmData.Segment1.data(1:40001,1);
             OutTrq = lvmData.Segment1.data(1:40001,2);
     end

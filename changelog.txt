@@ -1,8 +1,6 @@
-v1.1.0 ------------
-- Added ability to select multiple experiment .lvm files to "batch process", using the previously selected device data
-
-v1.1.1 ------------
-- Forgot adjust testing code before pushing v1.1.0, which caused a bug that gave Device Data a fixed path.
+v1.1.3 ------------
+- Added ability for dataPrep function to recognize the 'IE' as an experiment type in file names to allow for compatiblity with previously collected shoulder data
+- Changed orientation of Parameter array in PCalc to be more consistent with other outputs
 
 v1.1.2 ------------
 - Fixed incorrect mean contraction torque values by:
@@ -11,8 +9,13 @@ v1.1.2 ------------
     - Transfer function estimation, Coh^2 and VAF calculations are done using these new variables.
     - Other calculations are done using the old angle and torque variables. These now contain the Angle and Torque data readings from the machine
 
+v1.1.1 ------------
+- Forgot adjust testing code before pushing v1.1.0, which caused a bug that gave Device Data a fixed path.
+
+v1.1.0 ------------
+- Added ability to select multiple experiment .lvm files to "batch process", using the previously selected device data
+
 Todo
-- Functions for plotting stuff
 - Some method for reducing local minima during least squares fitting (probably using grid search method)
 - Change to use data less than 40s. Currently assumes 40s of data (as this is the output from the robot), this is split into 10s in the PCalc step.
 - Misc:

@@ -9,7 +9,7 @@ function GHSysID()
 
     %   Select Output folder
     outpath = uigetdir('','Select Output Directory');
-    % outpath = "..\PData\0000\output"; % for testing
+    % outpath = "..\PData\0000\output v1.1.3"; % for testing
 
     %%  Device Data ----------
     [DAA_file,DAA_path] = uigetfile('*.lvm','Select Device AB/AD LVM file');
@@ -20,7 +20,8 @@ function GHSysID()
     % DIE_file = 'Device_In(0000).lvm'; % for testing
     % DIE_path = '..\PData\0000\'; % for testing
 
-    % 1st column Angle Data, 2nd column Trq Data
+    %   Calculating Device Response
+    % Import device data: 1st column is Angle Data, 2nd column is Trq Data
     [Device_AA(:,1), Device_AA(:,2)] = dataPrep(DAA_file, DAA_path);
     sFRF_DAA = tfestimate(detrend(Device_AA(:,1),1),detrend(Device_AA(:,2),1),Dwin,Dov*Dwin,10001,Fs);
 

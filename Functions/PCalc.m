@@ -208,10 +208,10 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
 
     %% Function output
     % Pararray contains IBK values of each set
-    Pararray(1,:) = E1;
-    Pararray(2,:) = E2;
-    Pararray(3,:) = E3;
-    Pararray(4,:) = E4;
+    Pararray(:,1) = E1';
+    Pararray(:,2) = E2';
+    Pararray(:,3) = E3';
+    Pararray(:,4) = E4';
 
     MnTrq(1) = mean(outTrq(:,1));
     MnTrq(2) = mean(outTrq(:,2));
