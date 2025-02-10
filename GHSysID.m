@@ -7,9 +7,14 @@ function GHSysID()
     Dwin = 3000; %window size for device tf calculation
     Dov = 0.6; % overlap for device tf calculation
 
+    %   Get Signal Length Data from User
+    sigData = inputdlg({"Total Length of Signal (no. of Data points):","Length of Segment:"},'Signal Data input',1,{'40001','10001'});
+    NData = str2num(string(sigData(1))); % Total length of Signal from file
+    NSig = str2num(string(sigData(2))); % Length of Signal Segment for processing
+
     %   Select Output folder
     outpath = uigetdir('','Select Output Directory');
-    % outpath = "..\PData\0000\output v1.1.3"; % for testing
+    % outpath = "..\PData\0000\output v2.0.0"; % for testing
 
     %%  Device Data ----------
     [DAA_file,DAA_path] = uigetfile('*.lvm','Select Device AB/AD LVM file');
@@ -23,10 +28,10 @@ function GHSysID()
     %   Calculating Device Response
     % Import device data: 1st column is Angle Data, 2nd column is Trq Data
     [Device_AA(:,1), Device_AA(:,2)] = dataPrep(DAA_file, DAA_path);
-    sFRF_DAA = tfestimate(detrend(Device_AA(:,1),1),detrend(Device_AA(:,2),1),Dwin,Dov*Dwin,10001,Fs);
+    sFRF_DAA = tfestimate(detrend(Device_AA(1:NData,1),1),detrend(Device_AA(1:NData,2),1),Dwin,Dov*Dwin,NSig,Fs);
 
     [Device_IE(:,1), Device_IE(:,2)] = dataPrep(DIE_file, DIE_path);
-    sFRF_DIE = tfestimate(detrend(Device_IE(:,1),1),detrend(Device_IE(:,2),1),Dwin,Dov*Dwin,10001,Fs);
+    sFRF_DIE = tfestimate(detrend(Device_IE(1:NData,1),1),detrend(Device_IE(1:NData,2),1),Dwin,Dov*Dwin,NSig,Fs);
     
     %%  User Data -----------
     [file,path] = uigetfile('*.lvm','Select LVM file','MultiSelect','on');
@@ -42,12 +47,18 @@ function GHSysID()
     % For loop is for multiple file selections
     for fno = 1:length(file)
         [InAngle,OutTrq,fileName,exptype] = dataPrep(char(file(fno)),path);
+        sno = 1;
+        sig = 1;
 
-        switch exptype
-            case {'Ab','Ad'}
-                [Pars,mnTrq,VAF_NP,VAF_Par,sFRF_par,sFRF,coh,ftfArray] = PCalc(Fs,InAngle,OutTrq,sFRF_DAA);
-            case {'In','Ex'}
-                [Pars,mnTrq,VAF_NP,VAF_Par,sFRF_par,sFRF,coh,ftfArray] = PCalc(Fs,InAngle,OutTrq,sFRF_DIE);
+        while sig < NData % splits the signal into segments for processing
+            switch exptype
+                case {'Ab','Ad'}
+                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DAA);
+                case {'In','Ex'}
+                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DIE);
+            end
+            sno = sno+1;
+            sig = sig+NSig-1;
         end
 
         writematrix(Pars,outpath+"\"+string(fileName)+"_Par.csv");

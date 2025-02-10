@@ -1,3 +1,15 @@
+v2.0.0 ------------
+- The Full Data signal Length and segment length can now be user defined. Allowing for custom segmentation of the total signal, and allowing for the code to be used in other experiments
+- Removed BodePlot & BodePlotter functions, as they are no longer used
+- GHSysID:
+    - added variables for signal length from file, and desired signal segment length
+    - added UI window to get user input for above signal data
+    - Data is now split into segments in this function before processing.
+- dataPrep:
+    - all data points are imported from lvm file to their respective variable (previously it was set to 40001 points). Signal lengths will now be handled in GHSysID
+- PCalc:
+    - PCalc no longer splits data into segments, this is handled in GHSysID. As such this function only does calculations for the segment passed by GHSysID
+
 v1.1.3 ------------
 - Added ability for dataPrep function to recognize the 'IE' as an experiment type in file names to allow for compatiblity with previously collected shoulder data
 - Changed orientation of Parameter array in PCalc to be more consistent with other outputs

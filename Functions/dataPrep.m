@@ -1,5 +1,5 @@
 %% dataPrep - function to determine file name, experiment (contraction) type and import corresponding lvm data
-function [InAngle, OutTrq,filenm,exptype] = dataPrep(file,path)
+function [InAngle,OutTrq,filenm,exptype] = dataPrep(file,path)
 
     filePath = cat(2,path,file); % construct filepath from file name and dir path
 
@@ -15,11 +15,11 @@ function [InAngle, OutTrq,filenm,exptype] = dataPrep(file,path)
 
     switch exptype
         case {'Ab','Ad'}
-            InAngle = lvmData.Segment1.data(1:40001,4);
-            OutTrq = lvmData.Segment1.data(1:40001,5);
+            InAngle = lvmData.Segment1.data(:,4);
+            OutTrq = lvmData.Segment1.data(:,5);
         case {'In','Ex','IE'}
-            InAngle = lvmData.Segment1.data(1:40001,1);
-            OutTrq = lvmData.Segment1.data(1:40001,2);
+            InAngle = lvmData.Segment1.data(:,1);
+            OutTrq = lvmData.Segment1.data(:,2);
     end
 
     % varargout(1) = exptype;
