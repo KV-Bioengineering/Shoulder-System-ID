@@ -1,3 +1,6 @@
+v2.0.1 ------------
+- Removed BodePlot & BodePlotter functions, as they are no longer used (previously removed incorrectly, resulting in the files remaining in the commit)
+
 v2.0.0 ------------
 - The Full Data signal Length and segment length can now be user defined. Allowing for custom segmentation of the total signal, and allowing for the code to be used in other experiments
 - Removed BodePlot & BodePlotter functions, as they are no longer used
@@ -29,8 +32,6 @@ v1.1.0 ------------
 
 Todo
 - Some method for reducing local minima during least squares fitting (probably using grid search method)
-- Change to use data less than 40s. Currently assumes 40s of data (as this is the output from the robot), this is split into 10s in the PCalc step.
 - Misc:
     - Clean up code & Add comments to the non-parametric VAF section
-    - Comment BodePlotter functions (for required input args
     - Comment other functions
