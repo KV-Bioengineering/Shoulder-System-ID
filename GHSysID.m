@@ -53,14 +53,23 @@ function GHSysID()
         while sig < NData % splits the signal into segments for processing
             switch exptype
                 case {'Ab','Ad'}
-                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DAA);
+                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray,trq(:,sno),trqSim(:,sno)] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DAA);
                 case {'In','Ex'}
-                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DIE);
+                    [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray,trq(:,sno),trqSim(:,sno)] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DIE);
+            end
+            if VAF_Par(sno)<50 % 2nd pass through for extreme low VAF results
+                switch exptype
+                    case {'Ab','Ad'}
+                        [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray,trq(:,sno),trqSim(:,sno)] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DAA,abs(Pars(:,sno)));
+                    case {'In','Ex'}
+                        [Pars(:,sno),mnTrq(sno),VAF_NP(sno),VAF_Par(sno),sFRF_par(:,sno),sFRF(:,sno),coh(:,sno),ftfArray,trq(:,sno),trqSim(:,sno)] = PCalc(Fs,InAngle(sig:sig+NSig-1),OutTrq(sig:sig+NSig-1),sFRF_DIE,abs(Pars(:,sno)));
+                end
             end
             sno = sno+1;
             sig = sig+NSig-1;
         end
 
+        % Write output to csv files
         writematrix(Pars,outpath+"\"+string(fileName)+"_Par.csv");
         writematrix(mnTrq,outpath+"\"+string(fileName)+"_meanTrq.csv");
         writematrix(VAF_NP,outpath+"\"+string(fileName)+"_VAFNP.csv");
@@ -69,6 +78,8 @@ function GHSysID()
         writematrix(sFRF,outpath+"\"+string(fileName)+"_sFRF.csv");
         writematrix(coh,outpath+"\"+string(fileName)+"_coh.csv");
         writematrix(ftfArray,outpath+"\"+string(fileName)+"_ftf.csv");
+        writematrix(trq,outpath+"\"+string(fileName)+"_Trq.csv");
+        writematrix(trqSim,outpath+"\"+string(fileName)+"_TrqSim.csv");
     end
 
 end

@@ -1,3 +1,14 @@
+v2.1.0 ------------
+- GHSysID:
+    - Runs PCalc again for results with Parametric VAF less than 40%, using the absolute value of the parameters obtained as the initial parameter estimate.
+    - Added some comments for code clarity
+- PCalc:
+	- Added a variable for the initial parameter estimation to the input arguments. A default value is used if no initial estimate is passed through
+    - Now also returns detrended and filtered torque values for both experimental and simulated torques
+	- Cleaned up some comments in Transfer function estimation section
+- DataPrep:
+    - Cleaned up some code
+
 v2.0.1 ------------
 - Removed BodePlot & BodePlotter functions, as they are no longer used (previously removed incorrectly, resulting in the files remaining in the commit)
 

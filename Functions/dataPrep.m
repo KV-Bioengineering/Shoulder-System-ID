@@ -21,7 +21,4 @@ function [InAngle,OutTrq,filenm,exptype] = dataPrep(file,path)
             InAngle = lvmData.Segment1.data(:,1);
             OutTrq = lvmData.Segment1.data(:,2);
     end
-
-    % varargout(1) = exptype;
-    
 end

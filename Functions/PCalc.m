@@ -1,5 +1,5 @@
 %% PCalc - function that estimates the parameters of the GH joint, as well as calculates the parametric Variance accounted for
-function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray] = PCalc(Fs,inAnglData,outTrqData,sFRF_D)
+function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohArray,ftfArray,Trq_filt,Trq_simFilt] = PCalc(Fs,inAnglData,outTrqData,sFRF_D,E0)
     Ts = 1/Fs;
     t=(0:10000)*Ts; %time vector
     t=t';
@@ -32,9 +32,7 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
     %%  Transfer Function Estimation -----------------
     win = []; % window size
     ov = [];
-    % ov = 0.8*win; % overlap
-
-    % [sFRF,ftf] = tfestimate(inAngl,outTrq,win,ov.*win,f,Fs);
+    % ov = 0.8*win; % for custom overlap
 
     [sFRF,ftf] = tfestimate(dtAngle,dtTrq,win,ov,NSplt,Fs); % cross power spectral density between the input and the output
 
@@ -58,7 +56,10 @@ function [Pararray,MnTrq,VAF_NPArray,VAF_ParArray,sFRF_parArray,sFRF_array,cohAr
 
     %%   Parameter Estimation ---------------
 
-    E0=[0.2,2,20];
+    if ~exist("E0","var")
+        E0=[0.2,2,20];
+    end
+
     opts = optimoptions("lsqnonlin","Algorithm","levenberg-marquardt","StepTolerance",1.000000e-20,"Display","iter","MaxFunctionEvaluations",6000,"MaxIterations",1000);
 
     %Y-data for parameter estimation
